@@ -29,18 +29,18 @@ sequenceDiagram
 
 ### Key features
 
-- Describe your key feature
-- Describe your key feature
-- Describe your key feature
+- Sign in and create an account so you can access your fridge info anywhere
+- Add and remove items from the fridge along witht their expiration
+- Sort the fridge by name or expiration.
 
 ### Technologies
 
 I am going to use the required technologies in the following ways.
 
-- **HTML** - Description here
-- **CSS** - Description here
-- **React** - Description here
-- **Service** - Description here
+- **HTML** - Have two pages, one for login and one for showing the fridge
+- **CSS** - Make the website look good and easy to use on both the html pages.
+- **React** - Use for the login, the buttons to interact with the fridge, seeing what is in the fridge from the database, calling the endpoints.
+- **Service** - Service to login, logout, and make account. Service to add to fridge, remove from fridge, display everything in the fridge, and update something in the fridge.
 - **DB/Login** - Description here
 - **WebSocket** - Description here
 
