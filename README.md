@@ -36,7 +36,7 @@ I am going to use the required technologies in the following ways.
 - **HTML** - Have two pages, one for login and one for showing the fridge
 - **CSS** - Make the website look good and easy to use on both the html pages.
 - **React** - Use for the login, the buttons to interact with the fridge, seeing what is in the fridge from the database, calling the endpoints.
-- **Service** - Service to login, logout, and make account, along with authentication. Will make storage and retrieval requests to the database. Service to add to fridge, remove from fridge, display everything in the fridge, and update something in the fridge.
+- **Service** - Service to login, logout, and make account, along with authentication. Will make storage and retrieval requests to the database. Service to add to fridge, remove from fridge, display everything in the fridge, and update something in the fridge. https://www.fruityvice.com/ api will be used to give some data in for food in the user's fridge.
 - **DB/Login** - Stores each account's fridge data. Holds account data including username, password, and auth token
 - **WebSocket** - A chatroom you can join to talk about recipes.
 
