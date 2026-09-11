@@ -18,14 +18,9 @@ I am going to make a website that tracks the food in your fridge and tells you w
 
 ![Design image](appPhoto.png)
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+This sequence Diagram shows how the users will interact with each other and with the server. The server will store the data it has in a database. The chat will use websocket but the actual fridge data will (most likely) just use http endpoints.
 
-```mermaid
-    sequenceDiagram
-    actor You
-    actor Website
-    You->>Website: Replace this with your design
-```
+![Sequence Diagram](designPhoto.png)
 
 ### Key features
 
