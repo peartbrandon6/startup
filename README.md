@@ -1,8 +1,8 @@
-# Your startup name here
+# FridgeMate
 
 [My Notes](notes.md)
 
-A brief description of the application here. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+This application will track items that are in someone's fridge and their expiration in order to help people reduce waste and have more ease knowing what they have when they try to cook some food. There will be a chat for users to interact with each other.
 
 > [!NOTE]
 > This is a template for your startup application. You must modify this `README.md` file for each phase of your development. You only need to fill in the section for each deliverable when that deliverable is submitted in Canvas. Without completing the section for a deliverable, the TA will not know what to look for when grading your submission. Feel free to add additional information to each deliverable description, but make sure you at least have the list of rubric items and a description of what you did for each item.
@@ -16,12 +16,12 @@ I am going to make a website that tracks the food in your fridge and tells you w
 
 ### Design
 
-![Design image](placeholder.png)
+![Design image](appPhoto.png)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
 ```mermaid
-sequenceDiagram
+    sequenceDiagram
     actor You
     actor Website
     You->>Website: Replace this with your design
@@ -30,8 +30,9 @@ sequenceDiagram
 ### Key features
 
 - Sign in and create an account so you can access your fridge info anywhere
-- Add and remove items from the fridge along witht their expiration
+- Add and remove items from the fridge along with their expiration
 - Sort the fridge by name or expiration.
+- Chatroom you can join to talk about recipes.
 
 ### Technologies
 
@@ -40,9 +41,9 @@ I am going to use the required technologies in the following ways.
 - **HTML** - Have two pages, one for login and one for showing the fridge
 - **CSS** - Make the website look good and easy to use on both the html pages.
 - **React** - Use for the login, the buttons to interact with the fridge, seeing what is in the fridge from the database, calling the endpoints.
-- **Service** - Service to login, logout, and make account. Service to add to fridge, remove from fridge, display everything in the fridge, and update something in the fridge.
-- **DB/Login** - Description here
-- **WebSocket** - Description here
+- **Service** - Service to login, logout, and make account, along with authentication. Will make storage and retrieval requests to the database. Service to add to fridge, remove from fridge, display everything in the fridge, and update something in the fridge.
+- **DB/Login** - Stores each account's fridge data. Holds account data including username, password, and auth token
+- **WebSocket** - A chatroom you can join to talk about recipes.
 
 ## 🚀 Specification Deliverable
 
