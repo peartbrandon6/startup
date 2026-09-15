@@ -58,7 +58,7 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
-- [ ] **Rented EC2 server** - I did not complete this part of the deliverable.
+- [x] **Rented EC2 server** - I made a AWS account and rented a t3.nano EC2 server. I leased an ip address as well and launched an instance using the 260 preset as a base. I checked to make sure I can ssh into the server using my key to access it.
 - [ ] **Leased domain name** - I did not complete this part of the deliverable.
 - [ ] **Server accessible** from my domain: [https://yourdomainnamehere.click](https://yourdomainnamehere.click) - I did not complete this part of the deliverable.
 
