@@ -60,7 +60,8 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 
 - [x] **Rented EC2 server** - I made a AWS account and rented a t3.nano EC2 server. I got an elastic ip address as well and launched an instance using the 260 preset as a base. I checked to make sure I can ssh into the server using my key to access it.
 - [x] **Leased domain name** - I leased my domain name, which is fridgemate.click. I linked it to my ip address and entered the required DNS info.
-- [x] **Server accessible** from my domain: [https://fridgemate.click](https://fridgemate.click) - I updated my server files and made sure that going to the domain will open my website.
+- [x] **Server accessible** from my domain: [https://fridgemate.click](https://fridgemate.click) - I updated my server files and made sure that going to the domain will open my website, and that the connection is https rather than http
+
 ## 🚀 HTML deliverable
 
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
