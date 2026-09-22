@@ -5,3 +5,50 @@ link to fridge.html
 display username at the top
 footer contains the text 'Brandon Peart' with a link to https://github.com/peartbrandon6/startup
 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>FridgeMate - Chatroom</title>
+</head>
+<body>
+	<header>
+		<h1>Chatroom</h1>
+		<p>USERNAME</p>
+	</header>
+
+	<main>
+		<section aria-labelledby="chat-heading">
+			<h2 id="chat-heading">FridgeMate Chat</h2>
+			<p>Chatroom messages from the WebSocket will appear here.</p>
+
+			<article aria-label="Chatroom message placeholder">
+				<p><strong>USERNAME:</strong> Chat message placeholder</p>
+			</article>
+
+			<form action="#" method="post">
+				<p>
+					<label for="message">Message</label>
+					<textarea id="message" name="message" rows="4" cols="40" placeholder="Type a message" required></textarea>
+				</p>
+				<button type="submit">Send</button>
+			</form>
+		</section>
+
+		<section aria-labelledby="chat-image-heading">
+			<h2 id="chat-image-heading">Chat Bubble</h2>
+			<img src="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=800&q=80" alt="Chat bubbles on a screen">
+		</section>
+
+		<nav aria-label="Site links">
+			<h2>Links</h2>
+			<a href="fridge.html">Return to the fridge</a>
+		</nav>
+	</main>
+
+	<footer>
+		<p>Created by <a href="https://github.com/peartbrandon6/startup">Brandon Peart</a></p>
+	</footer>
+</body>
+</html>
