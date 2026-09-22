@@ -1,7 +1,87 @@
 <!--
 Fridge Page
 Displays the fridge data received from the database(database placeholder for now), an add item button,  a name and days until expiration fields, a sort button, an image of a fridge, and nutrition information from a 3rd party api(api placeholder).
-link to chat.html
-display username at the top
+link section with a link to chat.html
+display username at the top right of the page(use USERNAME as a filler)
 footer contains the text 'Brandon Peart' with a link to https://github.com/peartbrandon6/startup
 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>FridgeMate - My Fridge</title>
+</head>
+<body>
+	<header>
+		<h1>My Fridge</h1>
+		<p><strong>USERNAME</strong></p>
+	</header>
+
+	<main>
+		<section aria-labelledby="fridge-data-heading">
+			<h2 id="fridge-data-heading">Fridge Items</h2>
+
+			<form action="#" method="post">
+				<h3>Add an item</h3>
+				<p>
+					<label for="item-name">Item name</label>
+					<input id="item-name" name="item-name" type="text" placeholder="Enter an item" required>
+				</p>
+				<p>
+					<label for="days-until-expiration">Days until expiration</label>
+					<input id="days-until-expiration" name="days-until-expiration" type="number" min="0" placeholder="Enter number of days" required>
+				</p>
+				<button type="submit">Add item</button>
+			</form>
+
+			<form action="#" method="get">
+				<button type="submit">Sort by expiration</button>
+			</form>
+
+			<table>
+				<caption>Fridge data from the database</caption>
+				<thead>
+					<tr>
+						<th scope="col">Item name</th>
+						<th scope="col">Days until expiration</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Database item placeholder</td>
+						<td>0</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+		<section aria-labelledby="fridge-image-heading">
+			<h2 id="fridge-image-heading">Fridge</h2>
+			<img src="https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&w=800&q=80" alt="A refrigerator in a kitchen">
+		</section>
+
+		<section aria-labelledby="nutrition-heading">
+			<h2 id="nutrition-heading">Nutrition Information</h2>
+			<p>Nutrition information from a third-party API will appear here.</p>
+			<dl>
+				<dt>Calories</dt>
+				<dd>Nutrition data placeholder</dd>
+				<dt>Protein</dt>
+				<dd>Nutrition data placeholder</dd>
+				<dt>Carbohydrates</dt>
+				<dd>Nutrition data placeholder</dd>
+			</dl>
+		</section>
+
+		<nav aria-label="Site links">
+			<h2>Links</h2>
+			<a href="chat.html">Go to the chatroom</a>
+		</nav>
+	</main>
+
+	<footer>
+		<p>Created by <a href="https://github.com/peartbrandon6/startup">Brandon Peart</a></p>
+	</footer>
+</body>
+</html>
