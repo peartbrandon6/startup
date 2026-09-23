@@ -66,16 +66,16 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
-- [ ] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
+- [x] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
 - [x] **HTML pages** - I created an html page for each of my key features, which are the chat room, the fridge, and the login page.
-- [ ] **Proper HTML element usage** - I did not complete this part of the deliverable.
-- [ ] **Links** - I did not complete this part of the deliverable.
-- [ ] **Text** - I did not complete this part of the deliverable.
-- [ ] **3rd party API placeholder** - I did not complete this part of the deliverable.
-- [ ] **Images** - I did not complete this part of the deliverable.
-- [ ] **Login placeholder** - I did not complete this part of the deliverable.
-- [ ] **DB data placeholder** - I did not complete this part of the deliverable.
-- [ ] **WebSocket placeholder** - I did not complete this part of the deliverable.
+- [x] **Proper HTML element usage** - I used all the required HTML elements and made sure they all worked properly. I made sure I used the right elements for the right sections of the website i.e. used link for the page navigation
+- [x] **Links** - I put links to go to other parts of the website on each page under the link section
+- [x] **Text** - I put in all the necessary text, including labeled buttons and some description of what the website does.
+- [x] **3rd party API placeholder** - I put a placeholder for nutrition information that will come from a 3rd party api
+- [x] **Images** - I added some filler images on the pages that represent what the page is about.
+- [x] **Login placeholder** - I made fields for a login and account creation page in index.html that require entry to submit
+- [x] **DB data placeholder** - I put in a table that will eventually have the users database data in it. The server will also hold account information in the database.
+- [x] **WebSocket placeholder** - I made a page for the chatroom that will use Websocket so family members and/or strangers can talk online.
 
 ## 🚀 CSS deliverable
 
