@@ -19,6 +19,7 @@ footer contains the text 'Brandon Peart' with a link to https://github.com/peart
 	</header>
 
 	<main>
+		<p>Add all your fridge items and their expiration dates here. We'll keep track of them and let you know when they will expire. If you use all of something, you can remove it from your fridge.</p>
 		<section aria-labelledby="fridge-data-heading">
 			<h2 id="fridge-data-heading">Fridge Items</h2>
 
@@ -33,6 +34,15 @@ footer contains the text 'Brandon Peart' with a link to https://github.com/peart
 					<input id="days-until-expiration" name="days-until-expiration" type="number" min="0" placeholder="Enter number of days" required>
 				</p>
 				<button type="submit">Add item</button>
+			</form>
+
+			<form action="#" method="post">
+				<h3>Remove an item</h3>
+				<p>
+					<label for="item-name">Item name</label>
+					<input id="item-name" name="remove-name" type="text" placeholder="Enter an item" required>
+				</p>
+				<button type="submit">Remove item</button>
 			</form>
 
 			<form action="#" method="get">
