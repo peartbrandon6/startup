@@ -87,7 +87,7 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 - [ ] **All visual elements styled using CSS** - I did not complete this part of the deliverable.
 - [ ] **Responsive to window resizing using flexbox and/or grid display** - I did not complete this part of the deliverable.
 - [x] **Use of a imported font** - I imported the Roboto font to use for the name of the website/logo
-- [ ] **Use of different types of selectors including element, class, ID, and pseudo selectors** - I used id selectors
+- [x] **Use of different types of selectors including element, class, ID, and pseudo selectors** - I used id selectors, pseudoselectors such as :root(to apply to everything in <html>) or :hover(when the user hovers over an element), classes in the fridge and chatroom, elements throughout everything to reference sections of the html. 
 
 ## 🚀 React part 1: Routing deliverable
 
