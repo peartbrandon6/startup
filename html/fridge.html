@@ -10,6 +10,7 @@ footer contains the text 'Brandon Peart' with a link to https://github.com/peart
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
+	<link rel="stylesheet" href="fridge.css">
 	<title>FridgeMate - My Fridge</title>
 </head>
 <body>
@@ -19,60 +20,66 @@ footer contains the text 'Brandon Peart' with a link to https://github.com/peart
 	</header>
 
 	<main>
-		<p>Add all your fridge items and their expiration dates here. We'll keep track of them and let you know when they will expire. If you use all of something, you can remove it from your fridge.</p>
-		<section aria-labelledby="fridge-data-heading">
-			<h2 id="fridge-data-heading">Fridge Items</h2>
+		<p class="page-intro">Add all your fridge items and their expiration dates here. We'll keep track of them and let you know when they will expire. If you use all of something, you can remove it from your fridge.</p>
+		<section class="fridge-panel" aria-labelledby="fridge-data-heading">
+			<h2 class="panel-heading" id="fridge-data-heading">Fridge Items</h2>
 
-			<form action="#" method="post">
-				<h3>Add an item</h3>
-				<p>
-					<label for="item-name">Item name</label>
-					<input id="item-name" name="item-name" type="text" placeholder="Enter an item" required>
-				</p>
-				<p>
-					<label for="days-until-expiration">Days until expiration</label>
-					<input id="days-until-expiration" name="days-until-expiration" type="number" min="0" placeholder="Enter number of days" required>
-				</p>
-				<button type="submit">Add item</button>
-			</form>
+			<div class="item-forms">
+				<form action="#" method="post">
+					<h3>Add an item</h3>
+					<p>
+						<label for="item-name">Item name</label>
+						<input id="item-name" name="item-name" type="text" placeholder="Enter an item" required>
+					</p>
+					<p>
+						<label for="days-until-expiration">Days until expiration</label>
+						<input id="days-until-expiration" name="days-until-expiration" type="number" min="0" placeholder="Enter number of days" required>
+					</p>
+					<button type="submit">Add item</button>
+				</form>
 
-			<form action="#" method="post">
-				<h3>Remove an item</h3>
-				<p>
-					<label for="item-name">Item name</label>
-					<input id="item-name" name="remove-name" type="text" placeholder="Enter an item" required>
-				</p>
-				<button type="submit">Remove item</button>
-			</form>
+				<form action="#" method="post">
+					<h3>Remove an item</h3>
+					<p>
+						<label for="item-name">Item name</label>
+						<input id="item-name" name="remove-name" type="text" placeholder="Enter an item" required>
+					</p>
+					<button type="submit">Remove item</button>
+				</form>
+			</div>
 
-			<form action="#" method="get">
-				<button type="submit">Sort by expiration</button>
-			</form>
+			<div class="sort-controls">
+				<form action="#" method="get">
+					<button type="submit">Sort by expiration</button>
+				</form>
 
-            <form action="#" method="get">
-				<button type="submit">Sort by name</button>
-			</form>
+				<form action="#" method="get">
+					<button type="submit">Sort by name</button>
+				</form>
+			</div>
 
-			<table>
-				<caption>Fridge data from the database</caption>
-				<thead>
-					<tr>
+			<div class="fridge-data">
+				<table>
+					<caption>Fridge data from the database</caption>
+					<thead>
+						<tr>
 						<th scope="col">Item name</th>
 						<th scope="col">Days until expiration</th>
 					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>Database item placeholder</td>
-						<td>0</td>
-					</tr>
-				</tbody>
-			</table>
-            <img src="https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&w=800&q=80" alt="A refrigerator in a kitchen">
+					</thead>
+					<tbody>
+						<tr>
+							<td>Database item placeholder</td>
+							<td>0</td>
+						</tr>
+					</tbody>
+				</table>
+				<img src="https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&w=800&q=80" alt="A refrigerator in a kitchen">
+			</div>
 		</section>
 
-		<section aria-labelledby="nutrition-heading">
-			<h2 id="nutrition-heading">Nutrition Information</h2>
+		<section class="nutrition-panel" aria-labelledby="nutrition-heading">
+			<h2 class="panel-heading" id="nutrition-heading">Nutrition Information</h2>
 			<p>Nutrition information from a third-party API will appear here.</p>
 			<dl>
 				<dt>Calories</dt>
@@ -84,7 +91,7 @@ footer contains the text 'Brandon Peart' with a link to https://github.com/peart
 			</dl>
 		</section>
 
-		<nav aria-label="Site links">
+		<nav class="site-nav" aria-label="Site links">
 			<h2>Links</h2>
 			<a href="chat.html">Go to the chatroom</a>
 		</nav>
