@@ -235,8 +235,6 @@ th {
 
 .fridge-data img {
 	width: 100%;
-	min-height: 13rem;
-	max-height: 23rem;
 	border-radius: 0.5rem;
 	object-fit: cover;
 }
