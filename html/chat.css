@@ -4,23 +4,6 @@
 	box-sizing: border-box;
 }
 
-body {
-	min-height: 100vh;
-	min-height: 100svh;
-	margin: 0;
-	display: grid;
-	grid-template-rows: auto 1fr auto;
-	font-family: 'DM Sans', sans-serif;
-	color: #38291f;
-	background: #f5eee6;
-}
-
-header,
-footer {
-	padding: 1.25rem max(1rem, calc((100% - 70rem) / 2));
-	background: #fffaf4;
-}
-
 header {
 	display: flex;
 	align-items: center;
@@ -119,20 +102,11 @@ textarea {
 	resize: vertical;
 }
 
-button {
-	min-height: 2.8rem;
-	padding: 0.65rem 1.25rem;
-	border: 0;
-	border-radius: 0.4rem;
-	background: #a95525;
-	font: inherit;
-	font-weight: 700;
-	color: #fff;
-	cursor: pointer;
-}
-
-button:hover {
-	background: #88431f;
+.btn {
+	width: 100%;
+	min-height: 3rem;
+	padding: 0.75rem 1rem;
+	white-space: normal;
 }
 
 .chat-image img {

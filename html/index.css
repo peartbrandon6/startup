@@ -103,37 +103,11 @@ button:focus-visible {
 	outline-offset: 3px;
 }
 
-button {
+.btn {
 	width: 100%;
 	min-height: 3rem;
 	padding: 0.75rem 1rem;
-	border: 0;
-	border-radius: 0.4rem;
-	background: #a95525;
-	font: inherit;
-	font-weight: 700;
-	color: #fff;
-	cursor: pointer;
-	transition: background-color 150ms ease, transform 150ms ease;
-}
-
-button:hover {
-	background: #88431f;
-	transform: translateY(-1px);
-}
-
-form + p {
-	margin: 0.75rem 0 0;
-}
-
-form + p button {
-	border: 1px solid #d9bda2;
-	background: transparent;
-	color: #964b24;
-}
-
-form + p button:hover {
-	background: #f8eadb;
+	white-space: normal;
 }
 
 a {
