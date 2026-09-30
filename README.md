@@ -82,10 +82,10 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
 - [x] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
-- [ ] **Visually appealing colors and layout. No overflowing elements.** - I did not complete this part of the deliverable.
-- [ ] **Use of a CSS framework** - I did not complete this part of the deliverable.
-- [ ] **All visual elements styled using CSS** - I did not complete this part of the deliverable.
-- [ ] **Responsive to window resizing using flexbox and/or grid display** - I did not complete this part of the deliverable.
+- [x] **Visually appealing colors and layout. No overflowing elements.** - I chose colors and fonts that I liked that made the website look better.
+- [x] **Use of a CSS framework** - I used bootstrap for all of my buttons throughout my website
+- [x] **All visual elements styled using CSS** - I made sure every element had a reference in the css to make it look good, no elements are style-less.
+- [x] **Responsive to window resizing using flexbox and/or grid display** - I used grid display to organize and allow resizing of different webpage sections. I also set max and min sizes of certain elements to ensure it looks good.
 - [x] **Use of a imported font** - I imported the Roboto font to use for the name of the website/logo
 - [x] **Use of different types of selectors including element, class, ID, and pseudo selectors** - I used id selectors, pseudoselectors such as :root(to apply to everything in <html>) or :hover(when the user hovers over an element), classes in the fridge and chatroom, elements throughout everything to reference sections of the html. 
 
