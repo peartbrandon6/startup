@@ -93,10 +93,10 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
-- [ ] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
-- [ ] **Bundled using Vite** - I did not complete this part of the deliverable.
-- [ ] **Components** - I did not complete this part of the deliverable.
-- [ ] **Router** - I did not complete this part of the deliverable.
+- [x] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
+- [x] **Bundled using Vite** - I installed vite and npm and used the relevant scripts to assist in development, especially for doing dev builds on a local server.
+- [x] **Components** -  Created react components for each of the html and css files. The html files reference the css files so they keep the styling I made earlier.
+- [x] **Router** - Used react BrowserRouter so that react can have a single page navigation for the whole website. This makes it so the page doesn't have to refresh each time they go to a new page.
 
 ## 🚀 React part 2: Reactivity deliverable
 
