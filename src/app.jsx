@@ -18,9 +18,9 @@ function NotFound() {
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="body bg-dark text-light" id="home">
+      <div className="body" id="home">
         <header className="container-fluid">
-          <nav className="navbar navbar-expand navbar-dark bg-dark">
+          <nav className="navbar navbar-expand">
             <NavLink className="navbar-brand" to="/">
               FridgeMate
             </NavLink>
@@ -44,20 +44,18 @@ export default function App() {
           </nav>
         </header>
 
-        <main>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/fridge" element={<Fridge />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/fridge" element={<Fridge />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
 
-        <footer className="bg-dark text-white-50">
+        <footer>
           <div className="container-fluid">
             <p>
               Created by{' '}
-              <a className="text-reset" href="https://github.com/peartbrandon6/startup">
+              <a href="https://github.com/peartbrandon6/startup">
                 Brandon Peart
               </a>
             </p>
