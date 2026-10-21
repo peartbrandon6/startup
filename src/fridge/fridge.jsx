@@ -2,7 +2,17 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './fridge.css';
 
+function getNutritionData() {
+  return [
+    { nutrient: 'Calories', value: 'Nutrition data placeholder' },
+    { nutrient: 'Protein', value: 'Nutrition data placeholder' },
+    { nutrient: 'Carbohydrates', value: 'Nutrition data placeholder' },
+  ];
+}
+
 export function Fridge() {
+  const nutritionData = getNutritionData();
+
   return (
     <main id="fridge">
       <p className="page-intro">
@@ -98,12 +108,12 @@ export function Fridge() {
         </h2>
         <p>Nutrition information from a third-party API will appear here.</p>
         <dl>
-          <dt>Calories</dt>
-          <dd>Nutrition data placeholder</dd>
-          <dt>Protein</dt>
-          <dd>Nutrition data placeholder</dd>
-          <dt>Carbohydrates</dt>
-          <dd>Nutrition data placeholder</dd>
+          {nutritionData.map(({ nutrient, value }) => (
+            <React.Fragment key={nutrient}>
+              <dt>{nutrient}</dt>
+              <dd>{value}</dd>
+            </React.Fragment>
+          ))}
         </dl>
       </section>
 
