@@ -6,22 +6,24 @@ export function Login() {
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  function login(username, password) {
+  function login() {
     localStorage.setItem('username', username);
     navigate('/fridge');
   }
 
-  function createAccount(username, password) {
+  function createAccount() {
     localStorage.setItem('username', username);
     navigate('/fridge');
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (event.nativeEvent.submitter?.value === 'create-account') {
-      createAccount(username, password);
-    } else {
-      login(username, password);
+    login();
+  }
+
+  function handleCreateAccount(event) {
+    if (event.currentTarget.form.reportValidity()) {
+      createAccount();
     }
   }
 
@@ -63,7 +65,11 @@ export function Login() {
             </button>
           </p>
           <p>
-            <button className="btn btn-outline-secondary" type="submit" value="create-account">
+            <button
+              className="btn btn-outline-secondary"
+              type="button"
+              onClick={handleCreateAccount}
+            >
               Create an account
             </button>
           </p>

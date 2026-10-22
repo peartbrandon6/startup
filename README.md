@@ -104,7 +104,7 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 
 - [x] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
 - [x] **All functionality implemented or mocked out** - I made all the functions interactive, the user can now input data and see the website react to their inputs. For the features that need 3rd party api or database access, I put it into the localStorage to mock the functinoality.
-- [x] **Hooks** - I put all the corresponding sections into their useState or useEffect hooks
+- [x] **Hooks** - I put all the corresponding sections into their useState or useEffect hooks and they all function properly.
 
 ## 🚀 Service deliverable
 

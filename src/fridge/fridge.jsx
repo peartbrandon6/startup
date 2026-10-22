@@ -3,6 +3,11 @@ import { NavLink } from 'react-router-dom';
 import './fridge.css';
 
 const FRIDGE_STORAGE_KEY = 'fridgeItems';
+let nextItemId = 0;
+
+function createItemId() {
+  return globalThis.crypto?.randomUUID?.() ?? `item-${Date.now()}-${nextItemId++}`;
+}
 
 function getNutritionData() {
   return [
@@ -17,9 +22,19 @@ export function Fridge() {
   const [itemName, setItemName] = useState('');
   const [daysUntilExpiration, setDaysUntilExpiration] = useState('');
   const [removeItemName, setRemoveItemName] = useState('');
+  const [sortType, setSortType] = useState('none');
   const [storageReady, setStorageReady] = useState(false);
   const [error, setError] = useState('');
   const nutritionData = getNutritionData();
+  const displayedItems = [...items];
+
+  if (sortType === 'name') {
+    displayedItems.sort((first, second) => first.name.localeCompare(second.name));
+  } else if (sortType === 'expiration') {
+    displayedItems.sort(
+      (first, second) => first.daysUntilExpiration - second.daysUntilExpiration
+    );
+  }
 
   useEffect(() => {
     try {
@@ -30,13 +45,16 @@ export function Fridge() {
           !Array.isArray(parsedItems) ||
           !parsedItems.every(
             (item) =>
+              item !== null &&
+              typeof item === 'object' &&
               typeof item.name === 'string' &&
-              typeof item.daysUntilExpiration === 'number'
+              typeof item.daysUntilExpiration === 'number' &&
+              (item.id === undefined || typeof item.id === 'string')
           )
         ) {
           throw new Error('Saved fridge data is not in the expected format.');
         }
-        setItems(parsedItems);
+        setItems(parsedItems.map((item) => ({ ...item, id: item.id ?? createItemId() })));
       }
       setStorageReady(true);
     } catch (storageError) {
@@ -67,7 +85,7 @@ export function Fridge() {
 
     setItems((currentItems) => [
       ...currentItems,
-      { name, daysUntilExpiration: Number(daysUntilExpiration) },
+      { id: createItemId(), name, daysUntilExpiration: Number(daysUntilExpiration) },
     ]);
     setItemName('');
     setDaysUntilExpiration('');
@@ -81,27 +99,15 @@ export function Fridge() {
       return;
     }
 
-    const itemIndex = items.findIndex((item) => item.name.toLowerCase() === name);
-    if (itemIndex === -1) {
+    const itemToRemove = items.find((item) => item.name.toLowerCase() === name);
+    if (!itemToRemove) {
       setError(`No fridge item named "${removeItemName.trim()}" was found.`);
       return;
     }
 
-    setItems((currentItems) => currentItems.filter((_, index) => index !== itemIndex));
+    setItems((currentItems) => currentItems.filter((item) => item.id !== itemToRemove.id));
     setRemoveItemName('');
     setError('');
-  }
-
-  function sortByExpiration() {
-    setItems((currentItems) =>
-      [...currentItems].sort((first, second) => first.daysUntilExpiration - second.daysUntilExpiration)
-    );
-  }
-
-  function sortByName() {
-    setItems((currentItems) =>
-      [...currentItems].sort((first, second) => first.name.localeCompare(second.name))
-    );
   }
 
   return (
@@ -174,7 +180,7 @@ export function Fridge() {
           <button
             className="btn btn-outline-secondary"
             type="button"
-            onClick={sortByExpiration}
+            onClick={() => setSortType('expiration')}
             disabled={!storageReady}
           >
             Sort by expiration
@@ -182,10 +188,18 @@ export function Fridge() {
           <button
             className="btn btn-outline-secondary"
             type="button"
-            onClick={sortByName}
+            onClick={() => setSortType('name')}
             disabled={!storageReady}
           >
             Sort by name
+          </button>
+          <button
+            className="btn btn-outline-secondary"
+            type="button"
+            onClick={() => setSortType('none')}
+            disabled={!storageReady}
+          >
+            Original order
           </button>
         </div>
 
@@ -204,8 +218,8 @@ export function Fridge() {
                   <td colSpan="2">Your fridge is empty.</td>
                 </tr>
               ) : (
-                items.map((item, index) => (
-                  <tr key={`${item.name}-${index}`}>
+                displayedItems.map((item) => (
+                  <tr key={item.id}>
                     <td>{item.name}</td>
                     <td>{item.daysUntilExpiration}</td>
                   </tr>
