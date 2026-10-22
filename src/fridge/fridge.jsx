@@ -92,6 +92,18 @@ export function Fridge() {
     setError('');
   }
 
+  function sortByExpiration() {
+    setItems((currentItems) =>
+      [...currentItems].sort((first, second) => first.daysUntilExpiration - second.daysUntilExpiration)
+    );
+  }
+
+  function sortByName() {
+    setItems((currentItems) =>
+      [...currentItems].sort((first, second) => first.name.localeCompare(second.name))
+    );
+  }
+
   return (
     <main id="fridge">
       <p className="page-intro">
@@ -159,17 +171,22 @@ export function Fridge() {
         </div>
 
         <div className="sort-controls">
-          <form>
-            <button className="btn btn-outline-secondary" type="submit">
-              Sort by expiration
-            </button>
-          </form>
-
-          <form>
-            <button className="btn btn-outline-secondary" type="submit">
-              Sort by name
-            </button>
-          </form>
+          <button
+            className="btn btn-outline-secondary"
+            type="button"
+            onClick={sortByExpiration}
+            disabled={!storageReady}
+          >
+            Sort by expiration
+          </button>
+          <button
+            className="btn btn-outline-secondary"
+            type="button"
+            onClick={sortByName}
+            disabled={!storageReady}
+          >
+            Sort by name
+          </button>
         </div>
 
         <div className="fridge-data">
