@@ -193,14 +193,6 @@ export function Fridge() {
           >
             Sort by name
           </button>
-          <button
-            className="btn btn-outline-secondary"
-            type="button"
-            onClick={() => setSortType('none')}
-            disabled={!storageReady}
-          >
-            Original order
-          </button>
         </div>
 
         <div className="fridge-data">
