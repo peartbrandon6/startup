@@ -1,16 +1,46 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export function Login() {
+  const navigate = useNavigate();
+  const [username, setUsername] = React.useState('');
+
+  function login() {
+    localStorage.setItem('username', username);
+    navigate('/fridge');
+  }
+
+  function createAccount() {
+    localStorage.setItem('username', username);
+    navigate('/fridge');
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (event.nativeEvent.submitter?.value === 'create-account') {
+      createAccount();
+    } else {
+      login();
+    }
+  }
+
   return (
     <main id="login" className="container-fluid text-center">
       <section aria-labelledby="login-heading">
         <h2 id="login-heading">Log in</h2>
 
-        <form>
+        <form onSubmit={handleSubmit}>
           <p>
             <label htmlFor="username">Username</label>
-            <input id="username" name="username" type="text" placeholder="Enter your username" required />
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              required
+            />
           </p>
 
           <p>
@@ -19,17 +49,16 @@ export function Login() {
           </p>
 
           <p>
-            <NavLink className="btn btn-primary" to="/fridge">
+            <button className="btn btn-primary" type="submit" value="login">
               Log in
-            </NavLink>
+            </button>
+          </p>
+          <p>
+            <button className="btn btn-outline-secondary" type="submit" value="create-account">
+              Create an account
+            </button>
           </p>
         </form>
-
-        <p>
-          <NavLink className="btn btn-outline-secondary" to="/fridge">
-            Create an account(move to the fridge page)
-          </NavLink>
-        </p>
       </section>
     </main>
   );
