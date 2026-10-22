@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 export function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
-  function login() {
+  function login(username, password) {
     localStorage.setItem('username', username);
     navigate('/fridge');
   }
 
-  function createAccount() {
+  function createAccount(username, password) {
     localStorage.setItem('username', username);
     navigate('/fridge');
   }
@@ -18,9 +19,9 @@ export function Login() {
   function handleSubmit(event) {
     event.preventDefault();
     if (event.nativeEvent.submitter?.value === 'create-account') {
-      createAccount();
+      createAccount(username, password);
     } else {
-      login();
+      login(username, password);
     }
   }
 
@@ -45,7 +46,15 @@ export function Login() {
 
           <p>
             <label htmlFor="password">Password</label>
-            <input id="password" name="password" type="password" placeholder="Enter your password" required />
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
           </p>
 
           <p>
