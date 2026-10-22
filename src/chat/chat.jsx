@@ -1,21 +1,76 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import './chat.css';
 
+const simulatedMessages = [
+  { username: 'ALEX', text: 'Has anyone added milk to the fridge?' },
+  { username: 'JAMIE', text: 'I just added some fresh vegetables.' },
+  { username: 'TAYLOR', text: 'Remember to check the expiration dates!' },
+];
+
 export function Chat() {
+  const [messages, setMessages] = useState([]);
+  const [messageText, setMessageText] = useState('');
+  const messageListRef = useRef(null);
+  const nextUserMessageId = useRef(0);
+
+  useEffect(() => {
+    let messageIndex = 0;
+    const intervalId = window.setInterval(() => {
+      const message = simulatedMessages[messageIndex % simulatedMessages.length];
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        { ...message, id: `simulated-${messageIndex}` },
+      ]);
+      messageIndex += 1;
+    }, 10000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    const messageList = messageListRef.current;
+    if (messageList) {
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+  }, [messages]);
+
+  function sendMessage(event) {
+    event.preventDefault();
+    const text = messageText.trim();
+    if (!text) {
+      return;
+    }
+
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      { id: `user-${nextUserMessageId.current++}`, username: 'YOU', text },
+    ]);
+    setMessageText('');
+  }
+
   return (
     <main id="chat" className="chat-layout">
       <section className="chat-room" aria-labelledby="chat-heading">
         <h2 id="chat-heading">FridgeMate Chat</h2>
-        <p>Chatroom messages from the WebSocket will appear here.</p>
+        <p>Simulated chatroom messages will appear every 10 seconds.</p>
 
-        <article aria-label="Chatroom message placeholder">
-          <p>
-            <strong>USERNAME:</strong> Chat message placeholder
-          </p>
-        </article>
+        <section
+          className="chat-messages"
+          ref={messageListRef}
+          aria-label="Chatroom messages"
+          aria-live="polite"
+        >
+          {messages.map((message) => (
+            <article key={message.id}>
+              <p>
+                <strong>{message.username}:</strong> {message.text}
+              </p>
+            </article>
+          ))}
+        </section>
 
-        <form>
+        <form onSubmit={sendMessage}>
           <p>
             <label htmlFor="message">Message</label>
             <textarea
@@ -24,6 +79,8 @@ export function Chat() {
               rows="4"
               cols="40"
               placeholder="Type a message"
+              value={messageText}
+              onChange={(event) => setMessageText(event.target.value)}
               required
             />
           </p>
