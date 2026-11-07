@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import './fridge.css';
 
-const FRIDGE_STORAGE_KEY = 'fridgeItems';
 let nextItemId = 0;
 
 function createItemId() {
@@ -37,44 +36,37 @@ export function Fridge() {
   }
 
   useEffect(() => {
-    try {
-      const storedItems = localStorage.getItem(FRIDGE_STORAGE_KEY);
-      if (storedItems !== null) {
-        const parsedItems = JSON.parse(storedItems);
+    async function loadItems() {
+      try {
+        const response = await fetch('/api/fridge/items');
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.msg || 'Could not load fridge items.');
+        }
         if (
-          !Array.isArray(parsedItems) ||
-          !parsedItems.every(
+          !Array.isArray(result) ||
+          !result.every(
             (item) =>
               item !== null &&
               typeof item === 'object' &&
+              typeof item.id === 'string' &&
               typeof item.name === 'string' &&
-              typeof item.daysUntilExpiration === 'number' &&
-              (item.id === undefined || typeof item.id === 'string')
+              typeof item.daysUntilExpiration === 'number'
           )
         ) {
-          throw new Error('Saved fridge data is not in the expected format.');
+          throw new Error('Fridge data is not in the expected format.');
         }
-        setItems(parsedItems.map((item) => ({ ...item, id: item.id ?? createItemId() })));
+
+        setItems(result);
+        setStorageReady(true);
+      } catch (loadError) {
+        console.error('Could not load fridge items from the service.', loadError);
+        setError('Could not load fridge items. Check the service connection and try again.');
       }
-      setStorageReady(true);
-    } catch (storageError) {
-      console.error('Could not load fridge items from local storage.', storageError);
-      setError('Could not load saved fridge items. Check your browser storage and reload the page.');
     }
+
+    loadItems();
   }, []);
-
-  useEffect(() => {
-    if (!storageReady) {
-      return;
-    }
-
-    try {
-      localStorage.setItem(FRIDGE_STORAGE_KEY, JSON.stringify(items));
-    } catch (storageError) {
-      console.error('Could not save fridge items to local storage.', storageError);
-      setError('Could not save fridge items. Check your browser storage and try again.');
-    }
-  }, [items, storageReady]);
 
   async function addItem(event) {
     event.preventDefault();

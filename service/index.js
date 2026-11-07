@@ -3,7 +3,16 @@ const express = require('express');
 
 const app = express();
 const users = [];
-const fridgeItems = [];
+const fridgeDatabase = {
+  items: [
+    { id: 'seed-milk', name: 'Milk', daysUntilExpiration: 5 },
+    { id: 'seed-eggs', name: 'Eggs', daysUntilExpiration: 12 },
+    { id: 'seed-spinach', name: 'Spinach', daysUntilExpiration: 3 },
+  ],
+  async getItems() {
+    return this.items.map((item) => ({ ...item }));
+  },
+};
 const creatingUsernames = new Set();
 const apiRouter = express.Router();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
@@ -80,20 +89,24 @@ apiRouter.post('/fridge/items', (req, res) => {
     return;
   }
 
-  if (fridgeItems.some((item) => item.id === id)) {
+  if (fridgeDatabase.items.some((item) => item.id === id)) {
     res.status(409).send({ msg: 'Fridge item already exists' });
     return;
   }
 
   const item = { id, name: name.trim(), daysUntilExpiration };
-  fridgeItems.push(item);
+  fridgeDatabase.items.push(item);
   res.status(201).send(item);
 });
 
+apiRouter.get('/fridge/items', async (_req, res) => {
+  res.send(await fridgeDatabase.getItems());
+});
+
 apiRouter.delete('/fridge/items/:id', (req, res) => {
-  const itemIndex = fridgeItems.findIndex((item) => item.id === req.params.id);
+  const itemIndex = fridgeDatabase.items.findIndex((item) => item.id === req.params.id);
   if (itemIndex !== -1) {
-    fridgeItems.splice(itemIndex, 1);
+    fridgeDatabase.items.splice(itemIndex, 1);
   }
 
   res.status(204).end();
