@@ -1,0 +1,69 @@
+const bcrypt = require('bcryptjs');
+const express = require('express');
+
+const app = express();
+const users = [];
+const creatingUsernames = new Set();
+const apiRouter = express.Router();
+const port = process.argv.length > 2 ? process.argv[2] : 4000;
+
+app.use(express.json());
+app.use(express.static('public'));
+app.use('/api', apiRouter);
+
+apiRouter.post('/auth/create', async (req, res) => {
+  const { username, password } = req.body || {};
+  if (
+    typeof username !== 'string' ||
+    !username.trim() ||
+    typeof password !== 'string' ||
+    !password
+  ) {
+    res.status(400).send({ msg: 'Username and password are required' });
+    return;
+  }
+
+  const normalizedUsername = username.trim();
+  if (
+    creatingUsernames.has(normalizedUsername) ||
+    users.some((user) => user.username === normalizedUsername)
+  ) {
+    res.status(409).send({ msg: 'Existing user' });
+    return;
+  }
+
+  creatingUsernames.add(normalizedUsername);
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    users.push({ username: normalizedUsername, password: passwordHash });
+  } finally {
+    creatingUsernames.delete(normalizedUsername);
+  }
+
+  res.status(201).send({ username: normalizedUsername });
+});
+
+apiRouter.post('/auth/login', async (req, res) => {
+  const { username, password } = req.body || {};
+  if (
+    typeof username !== 'string' ||
+    !username.trim() ||
+    typeof password !== 'string' ||
+    !password
+  ) {
+    res.status(400).send({ msg: 'Username and password are required' });
+    return;
+  }
+
+  const user = users.find((candidate) => candidate.username === username.trim());
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    res.status(401).send({ msg: 'Unauthorized' });
+    return;
+  }
+
+  res.send({ username: user.username });
+});
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`);
+});

@@ -5,26 +5,47 @@ export function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+
+  async function authenticate(endpoint) {
+    setError('');
+    try {
+      const response = await fetch(`/api/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setError(result.msg || 'Unable to authenticate');
+        return;
+      }
+
+      localStorage.setItem('username', result.username);
+      navigate('/fridge');
+    } catch {
+      setError('Unable to reach the service. Please try again.');
+    }
+  }
 
   function login() {
-    localStorage.setItem('username', username);
-    navigate('/fridge');
+    return authenticate('login');
   }
 
   function createAccount() {
-    localStorage.setItem('username', username);
-    navigate('/fridge');
+    return authenticate('create');
+  }
+
+  function handleCreateAccount(event) {
+    event.preventDefault();
+    if (event.currentTarget.form.reportValidity()) {
+      createAccount();
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
     login();
-  }
-
-  function handleCreateAccount(event) {
-    if (event.currentTarget.form.reportValidity()) {
-      createAccount();
-    }
   }
 
   return (
@@ -58,6 +79,8 @@ export function Login() {
               required
             />
           </p>
+
+          {error && <p role="alert">{error}</p>}
 
           <p>
             <button className="btn btn-primary" type="submit" value="login">
