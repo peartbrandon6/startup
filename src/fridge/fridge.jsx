@@ -8,14 +8,6 @@ function createItemId() {
   return globalThis.crypto?.randomUUID?.() ?? `item-${Date.now()}-${nextItemId++}`;
 }
 
-function getNutritionData() {
-  return [
-    { nutrient: 'Calories', value: 'Nutrition data placeholder' },
-    { nutrient: 'Protein', value: 'Nutrition data placeholder' },
-    { nutrient: 'Carbohydrates', value: 'Nutrition data placeholder' },
-  ];
-}
-
 export function Fridge() {
   const [items, setItems] = useState([]);
   const [itemName, setItemName] = useState('');
@@ -24,7 +16,10 @@ export function Fridge() {
   const [sortType, setSortType] = useState('none');
   const [storageReady, setStorageReady] = useState(false);
   const [error, setError] = useState('');
-  const nutritionData = getNutritionData();
+  const [nutritionFruit, setNutritionFruit] = useState('');
+  const [nutrition, setNutrition] = useState(null);
+  const [nutritionLoading, setNutritionLoading] = useState(false);
+  const [nutritionError, setNutritionError] = useState('');
   const displayedItems = [...items];
 
   if (sortType === 'name') {
@@ -133,6 +128,33 @@ export function Fridge() {
     } catch (requestError) {
       console.error('Could not remove fridge item through the service.', requestError);
       setError('Could not reach the service. The fridge item was not removed.');
+    }
+  }
+
+  async function lookupNutrition(event) {
+    event.preventDefault();
+    const fruit = nutritionFruit.trim();
+    if (!fruit) {
+      return;
+    }
+
+    setNutritionLoading(true);
+    setNutritionError('');
+    setNutrition(null);
+    try {
+      const response = await fetch(`/api/nutrition/${encodeURIComponent(fruit)}`);
+      const result = await response.json();
+      if (!response.ok) {
+        setNutritionError(result.msg || 'Could not load nutrition data.');
+        return;
+      }
+
+      setNutrition(result);
+    } catch (requestError) {
+      console.error('Could not load nutrition data.', requestError);
+      setNutritionError('Could not reach the nutrition service. Please try again.');
+    } finally {
+      setNutritionLoading(false);
     }
   }
 
@@ -256,15 +278,43 @@ export function Fridge() {
         <h2 className="panel-heading" id="nutrition-heading">
           Nutrition Information
         </h2>
-        <p>Nutrition information from a third-party API will appear here.</p>
-        <dl>
-          {nutritionData.map(({ nutrient, value }) => (
-            <React.Fragment key={nutrient}>
-              <dt>{nutrient}</dt>
-              <dd>{value}</dd>
-            </React.Fragment>
-          ))}
-        </dl>
+        <p>Look up nutrition information for a fruit from Fruityvice.</p>
+        <form onSubmit={lookupNutrition}>
+          <p>
+            <label htmlFor="nutrition-fruit">Fruit name</label>
+            <input
+              id="nutrition-fruit"
+              name="nutrition-fruit"
+              type="text"
+              placeholder="For example, apple"
+              value={nutritionFruit}
+              onChange={(event) => setNutritionFruit(event.target.value)}
+              required
+            />
+          </p>
+          <button className="btn btn-primary" type="submit" disabled={nutritionLoading}>
+            {nutritionLoading ? 'Loading...' : 'Get nutrition'}
+          </button>
+        </form>
+        {nutritionError && <p role="alert">{nutritionError}</p>}
+        {nutrition && (
+          <>
+            <h3>{nutrition.name}</h3>
+            {nutrition.family && <p>Family: {nutrition.family}</p>}
+            <dl>
+              <dt>Calories</dt>
+              <dd>{nutrition.nutritions.calories} kcal</dd>
+              <dt>Fat</dt>
+              <dd>{nutrition.nutritions.fat} g</dd>
+              <dt>Sugar</dt>
+              <dd>{nutrition.nutritions.sugar} g</dd>
+              <dt>Carbohydrates</dt>
+              <dd>{nutrition.nutritions.carbohydrates} g</dd>
+              <dt>Protein</dt>
+              <dd>{nutrition.nutritions.protein} g</dd>
+            </dl>
+          </>
+        )}
       </section>
 
       <nav className="site-nav" aria-label="Site links">

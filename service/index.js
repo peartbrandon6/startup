@@ -103,6 +103,48 @@ apiRouter.get('/fridge/items', async (_req, res) => {
   res.send(await fridgeDatabase.getItems());
 });
 
+apiRouter.get('/nutrition/:fruit', async (req, res) => {
+  const fruit = req.params.fruit.trim();
+  if (!fruit) {
+    res.status(400).send({ msg: 'A fruit name is required' });
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://www.fruityvice.com/api/fruit/${encodeURIComponent(fruit)}`,
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (response.status === 404) {
+      res.status(404).send({ msg: `No nutrition data found for "${fruit}"` });
+      return;
+    }
+    if (!response.ok) {
+      res.status(502).send({ msg: 'The nutrition service is temporarily unavailable' });
+      return;
+    }
+
+    const fruitData = await response.json();
+    if (
+      typeof fruitData.name !== 'string' ||
+      !fruitData.nutritions ||
+      typeof fruitData.nutritions !== 'object'
+    ) {
+      res.status(502).send({ msg: 'The nutrition service returned invalid data' });
+      return;
+    }
+
+    res.send({
+      name: fruitData.name,
+      family: fruitData.family,
+      nutritions: fruitData.nutritions,
+    });
+  } catch (error) {
+    console.error('Could not retrieve nutrition data from Fruityvice.', error);
+    res.status(502).send({ msg: 'Could not reach the nutrition service' });
+  }
+});
+
 apiRouter.delete('/fridge/items/:id', (req, res) => {
   const itemIndex = fridgeDatabase.items.findIndex((item) => item.id === req.params.id);
   if (itemIndex !== -1) {
