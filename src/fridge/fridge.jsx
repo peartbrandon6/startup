@@ -76,23 +76,42 @@ export function Fridge() {
     }
   }, [items, storageReady]);
 
-  function addItem(event) {
+  async function addItem(event) {
     event.preventDefault();
     const name = itemName.trim();
     if (!name || !storageReady) {
       return;
     }
 
-    setItems((currentItems) => [
-      ...currentItems,
-      { id: createItemId(), name, daysUntilExpiration: Number(daysUntilExpiration) },
-    ]);
-    setItemName('');
-    setDaysUntilExpiration('');
-    setError('');
+    const item = {
+      id: createItemId(),
+      name,
+      daysUntilExpiration: Number(daysUntilExpiration),
+    };
+
+    try {
+      const response = await fetch('/api/fridge/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setError(result.msg || 'Could not add fridge item.');
+        return;
+      }
+
+      setItems((currentItems) => [...currentItems, result]);
+      setItemName('');
+      setDaysUntilExpiration('');
+      setError('');
+    } catch (requestError) {
+      console.error('Could not add fridge item through the service.', requestError);
+      setError('Could not reach the service. The fridge item was not added.');
+    }
   }
 
-  function removeItem(event) {
+  async function removeItem(event) {
     event.preventDefault();
     const name = removeItemName.trim().toLowerCase();
     if (!name || !storageReady) {
@@ -105,9 +124,24 @@ export function Fridge() {
       return;
     }
 
-    setItems((currentItems) => currentItems.filter((item) => item.id !== itemToRemove.id));
-    setRemoveItemName('');
-    setError('');
+    try {
+      const response = await fetch(
+        `/api/fridge/items/${encodeURIComponent(itemToRemove.id)}`,
+        { method: 'DELETE' }
+      );
+      if (!response.ok) {
+        const result = await response.json();
+        setError(result.msg || 'Could not remove fridge item.');
+        return;
+      }
+
+      setItems((currentItems) => currentItems.filter((item) => item.id !== itemToRemove.id));
+      setRemoveItemName('');
+      setError('');
+    } catch (requestError) {
+      console.error('Could not remove fridge item through the service.', requestError);
+      setError('Could not reach the service. The fridge item was not removed.');
+    }
   }
 
   return (

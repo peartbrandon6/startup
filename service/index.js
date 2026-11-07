@@ -3,6 +3,7 @@ const express = require('express');
 
 const app = express();
 const users = [];
+const fridgeItems = [];
 const creatingUsernames = new Set();
 const apiRouter = express.Router();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
@@ -62,6 +63,40 @@ apiRouter.post('/auth/login', async (req, res) => {
   }
 
   res.send({ username: user.username });
+});
+
+apiRouter.post('/fridge/items', (req, res) => {
+  const { id, name, daysUntilExpiration } = req.body || {};
+  if (
+    typeof id !== 'string' ||
+    !id.trim() ||
+    typeof name !== 'string' ||
+    !name.trim() ||
+    typeof daysUntilExpiration !== 'number' ||
+    !Number.isFinite(daysUntilExpiration) ||
+    daysUntilExpiration < 0
+  ) {
+    res.status(400).send({ msg: 'A valid item ID, name, and expiration days are required' });
+    return;
+  }
+
+  if (fridgeItems.some((item) => item.id === id)) {
+    res.status(409).send({ msg: 'Fridge item already exists' });
+    return;
+  }
+
+  const item = { id, name: name.trim(), daysUntilExpiration };
+  fridgeItems.push(item);
+  res.status(201).send(item);
+});
+
+apiRouter.delete('/fridge/items/:id', (req, res) => {
+  const itemIndex = fridgeItems.findIndex((item) => item.id === req.params.id);
+  if (itemIndex !== -1) {
+    fridgeItems.splice(itemIndex, 1);
+  }
+
+  res.status(204).end();
 });
 
 app.listen(port, () => {
