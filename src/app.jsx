@@ -1,7 +1,14 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './app.css';
-import { BrowserRouter, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  NavLink,
+  Route,
+  Routes,
+  useNavigate,
+} from 'react-router-dom';
 import { Login } from './login/login';
 import { Fridge } from './fridge/fridge';
 import { Chat } from './chat/chat';
@@ -13,6 +20,53 @@ function NotFound() {
       <p>The page you requested does not exist.</p>
     </section>
   );
+}
+
+function AuthenticatedPage({ children }) {
+  const [status, setStatus] = React.useState('checking');
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+    async function checkAuthentication() {
+      try {
+        const response = await fetch('/api/auth/me', { signal: controller.signal });
+        if (response.status === 401) {
+          localStorage.removeItem('username');
+          window.dispatchEvent(new Event('auth-change'));
+          setStatus('anonymous');
+          return;
+        }
+        if (!response.ok) {
+          throw new Error('Could not verify your login.');
+        }
+
+        const result = await response.json();
+        localStorage.setItem('username', result.username);
+        window.dispatchEvent(new Event('auth-change'));
+        setStatus('authenticated');
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Could not verify authentication.', error);
+          setStatus('error');
+        }
+      }
+    }
+
+    checkAuthentication();
+    return () => controller.abort();
+  }, []);
+
+  if (status === 'anonymous') {
+    return <Navigate to="/" replace />;
+  }
+  if (status === 'error') {
+    return <p role="alert">Could not verify your login. Please try again.</p>;
+  }
+  if (status !== 'authenticated') {
+    return <p role="status">Checking your login...</p>;
+  }
+
+  return children;
 }
 
 function AppNavigation() {
@@ -104,8 +158,22 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/fridge" element={<Fridge />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route
+            path="/fridge"
+            element={
+              <AuthenticatedPage>
+                <Fridge />
+              </AuthenticatedPage>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <AuthenticatedPage>
+                <Chat />
+              </AuthenticatedPage>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
 

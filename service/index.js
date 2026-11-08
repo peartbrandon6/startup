@@ -20,6 +20,7 @@ const fridgeDatabase = {
 const creatingUsernames = new Set();
 const apiRouter = express.Router();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
+let chatServer;
 const chatDatabase = {
   messages: [],
   async getMessages() {
@@ -46,6 +47,37 @@ function setAuthCookie(res, token) {
     sameSite: 'strict',
     secure: process.env.NODE_ENV === 'production',
   });
+}
+
+function findUserByToken(token) {
+  return users.find((user) => token && user.token === token);
+}
+
+function getTokenFromCookieHeader(cookieHeader = '') {
+  const tokenCookie = cookieHeader
+    .split(';')
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith('token='));
+  if (!tokenCookie) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(tokenCookie.slice('token='.length));
+  } catch {
+    return null;
+  }
+}
+
+function requireAuth(req, res, next) {
+  const user = findUserByToken(req.cookies.token);
+  if (!user) {
+    res.status(401).send({ msg: 'Unauthorized' });
+    return;
+  }
+
+  req.authenticatedUser = user;
+  next();
 }
 
 apiRouter.post('/auth/create', async (req, res) => {
@@ -105,11 +137,23 @@ apiRouter.post('/auth/login', async (req, res) => {
   res.send({ username: user.username });
 });
 
+apiRouter.get('/auth/me', requireAuth, (req, res) => {
+  res.send({ username: req.authenticatedUser.username });
+});
+
 apiRouter.delete('/auth/logout', (req, res) => {
   const token = req.cookies.token;
-  const user = users.find((candidate) => candidate.token === token);
+  const user = findUserByToken(token);
   if (user) {
     delete user.token;
+  }
+
+  if (chatServer && token) {
+    for (const client of chatServer.clients) {
+      if (client.authToken === token) {
+        client.close(1008, 'Authentication expired');
+      }
+    }
   }
 
   res.clearCookie('token', {
@@ -119,6 +163,10 @@ apiRouter.delete('/auth/logout', (req, res) => {
   });
   res.status(204).end();
 });
+
+apiRouter.use('/fridge', requireAuth);
+apiRouter.use('/nutrition', requireAuth);
+apiRouter.use('/chat', requireAuth);
 
 apiRouter.post('/fridge/items', (req, res) => {
   const { id, name, daysUntilExpiration } = req.body || {};
@@ -205,19 +253,35 @@ apiRouter.get('/chat/messages', async (_req, res) => {
 });
 
 const server = http.createServer(app);
-const chatServer = new WebSocketServer({
+chatServer = new WebSocketServer({
   server,
   path: '/api/chat',
   maxPayload: 16 * 1024,
+  verifyClient: (info, done) => {
+    const token = getTokenFromCookieHeader(info.req.headers.cookie);
+    if (!findUserByToken(token)) {
+      done(false, 401, 'Unauthorized');
+      return;
+    }
+
+    done(true);
+  },
 });
 
-chatServer.on('connection', async (socket) => {
+chatServer.on('connection', async (socket, request) => {
+  socket.authToken = getTokenFromCookieHeader(request.headers.cookie);
+  socket.username = findUserByToken(socket.authToken).username;
   socket.send(JSON.stringify({
     type: 'history',
     messages: await chatDatabase.getMessages(),
   }));
 
   socket.on('message', async (data) => {
+    if (!findUserByToken(socket.authToken)) {
+      socket.close(1008, 'Authentication expired');
+      return;
+    }
+
     let request;
     try {
       request = JSON.parse(data.toString());
@@ -231,7 +295,7 @@ chatServer.on('connection', async (socket) => {
       return;
     }
 
-    const username = typeof request.username === 'string' ? request.username.trim() : '';
+    const username = socket.username;
     const text = typeof request.text === 'string' ? request.text.trim() : '';
     if (!username || username.length > 40 || !text || text.length > 500) {
       socket.send(JSON.stringify({
