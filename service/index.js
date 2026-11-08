@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const http = require('node:http');
 const { randomUUID } = require('node:crypto');
@@ -34,8 +35,18 @@ const chatDatabase = {
 };
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static('public'));
 app.use('/api', apiRouter);
+
+function setAuthCookie(res, token) {
+  res.cookie('token', token, {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+  });
+}
 
 apiRouter.post('/auth/create', async (req, res) => {
   const { username, password } = req.body || {};
@@ -61,7 +72,9 @@ apiRouter.post('/auth/create', async (req, res) => {
   creatingUsernames.add(normalizedUsername);
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-    users.push({ username: normalizedUsername, password: passwordHash });
+    const user = { username: normalizedUsername, password: passwordHash, token: randomUUID() };
+    users.push(user);
+    setAuthCookie(res, user.token);
   } finally {
     creatingUsernames.delete(normalizedUsername);
   }
@@ -87,7 +100,24 @@ apiRouter.post('/auth/login', async (req, res) => {
     return;
   }
 
+  user.token = randomUUID();
+  setAuthCookie(res, user.token);
   res.send({ username: user.username });
+});
+
+apiRouter.delete('/auth/logout', (req, res) => {
+  const token = req.cookies.token;
+  const user = users.find((candidate) => candidate.token === token);
+  if (user) {
+    delete user.token;
+  }
+
+  res.clearCookie('token', {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+  });
+  res.status(204).end();
 });
 
 apiRouter.post('/fridge/items', (req, res) => {

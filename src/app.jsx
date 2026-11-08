@@ -18,6 +18,8 @@ function NotFound() {
 function AppNavigation() {
   const navigate = useNavigate();
   const [username, setUsername] = React.useState(() => localStorage.getItem('username'));
+  const [logoutError, setLogoutError] = React.useState('');
+  const [loggingOut, setLoggingOut] = React.useState(false);
 
   React.useEffect(() => {
     function updateUsername() {
@@ -32,10 +34,24 @@ function AppNavigation() {
     };
   }, []);
 
-  function logout() {
-    localStorage.removeItem('username');
-    setUsername(null);
-    navigate('/');
+  async function logout() {
+    setLogoutError('');
+    setLoggingOut(true);
+    try {
+      const response = await fetch('/api/auth/logout', { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('The service could not end your session.');
+      }
+
+      localStorage.removeItem('username');
+      setUsername(null);
+      navigate('/');
+    } catch (error) {
+      console.error('Could not log out from the service.', error);
+      setLogoutError('Could not log out. Please try again.');
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   return (
@@ -63,9 +79,15 @@ function AppNavigation() {
       {username && (
         <div className="account-controls">
           <span className="account-username">Signed in as {username}</span>
-          <button className="btn btn-outline-secondary logout-button" type="button" onClick={logout}>
-            Log out
+          <button
+            className="btn btn-outline-secondary logout-button"
+            type="button"
+            onClick={logout}
+            disabled={loggingOut}
+          >
+            {loggingOut ? 'Logging out...' : 'Log out'}
           </button>
+          {logoutError && <span role="alert">{logoutError}</span>}
         </div>
       )}
     </nav>
