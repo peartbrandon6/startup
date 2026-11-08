@@ -111,12 +111,12 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
 - [x] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
-- [ ] **Node.js/Express HTTP service** - I did not complete this part of the deliverable.
-- [ ] **Static middleware for frontend** - I did not complete this part of the deliverable.
-- [ ] **Calls to third party endpoints** - I did not complete this part of the deliverable.
-- [ ] **Backend service endpoints** - I did not complete this part of the deliverable.
-- [ ] **Frontend calls service endpoints** - I did not complete this part of the deliverable.
-- [ ] **Supports registration, login, logout, and restricted endpoint** - I did not complete this part of the deliverable.
+- [x] **Node.js/Express HTTP service** - I used express apiRouter to handle requests
+- [x] **Static middleware for frontend** - I had the app use express public to make it give static files to the client directly.
+- [x] **Calls to third party endpoints** - I called the fruityvice api to get nutrition information for fruits
+- [x] **Backend service endpoints** - I made endpoints for all the backend information, using filler data for the database that is stored locally in the service.
+- [x] **Frontend calls service endpoints** - I called all of the backend endpoints in the clientside code using fetch
+- [x] **Supports registration, login, logout, and restricted endpoint** - I added the register login endpoints which store data locally in the service for now.
 - [x] **Uses BCrypt to hash passwords** - Used bcrypt in login and register endpoints to hash passwords
 
 ## 🚀 DB deliverable
