@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
 const express = require('express');
+const http = require('node:http');
+const { randomUUID } = require('node:crypto');
+const { WebSocket, WebSocketServer } = require('ws');
 
 const app = express();
 const users = [];
@@ -16,6 +19,19 @@ const fridgeDatabase = {
 const creatingUsernames = new Set();
 const apiRouter = express.Router();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
+const chatDatabase = {
+  messages: [],
+  async getMessages() {
+    return this.messages.map((message) => ({ ...message }));
+  },
+  async addMessage(message) {
+    this.messages.push(message);
+    if (this.messages.length > 100) {
+      this.messages.shift();
+    }
+    return { ...message };
+  },
+};
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -154,6 +170,62 @@ apiRouter.delete('/fridge/items/:id', (req, res) => {
   res.status(204).end();
 });
 
-app.listen(port, () => {
+apiRouter.get('/chat/messages', async (_req, res) => {
+  res.send(await chatDatabase.getMessages());
+});
+
+const server = http.createServer(app);
+const chatServer = new WebSocketServer({
+  server,
+  path: '/api/chat',
+  maxPayload: 16 * 1024,
+});
+
+chatServer.on('connection', async (socket) => {
+  socket.send(JSON.stringify({
+    type: 'history',
+    messages: await chatDatabase.getMessages(),
+  }));
+
+  socket.on('message', async (data) => {
+    let request;
+    try {
+      request = JSON.parse(data.toString());
+    } catch {
+      socket.send(JSON.stringify({ type: 'error', msg: 'Message must be valid JSON' }));
+      return;
+    }
+
+    if (!request || typeof request !== 'object' || Array.isArray(request)) {
+      socket.send(JSON.stringify({ type: 'error', msg: 'Message must be a JSON object' }));
+      return;
+    }
+
+    const username = typeof request.username === 'string' ? request.username.trim() : '';
+    const text = typeof request.text === 'string' ? request.text.trim() : '';
+    if (!username || username.length > 40 || !text || text.length > 500) {
+      socket.send(JSON.stringify({
+        type: 'error',
+        msg: 'A username (up to 40 characters) and message (up to 500 characters) are required',
+      }));
+      return;
+    }
+
+    const message = await chatDatabase.addMessage({
+      id: randomUUID(),
+      username,
+      text,
+      timestamp: new Date().toISOString(),
+    });
+    const broadcast = JSON.stringify({ type: 'message', message });
+    for (const client of chatServer.clients) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(broadcast);
+      }
+    }
+  });
+});
+
+server.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
