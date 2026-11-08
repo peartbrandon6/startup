@@ -29,6 +29,43 @@ header {
 	text-align: center;
 }
 
+header .navbar {
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.5rem;
+}
+
+header .navbar-brand {
+	font-family: 'Roboto', sans-serif;
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #8e4b24;
+}
+
+header .navbar-nav {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.account-controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+}
+
+.account-username {
+	font-weight: 700;
+	color: #57402f;
+}
+
+.logout-button {
+	width: auto;
+	min-height: 2.5rem;
+	padding: 0.5rem 0.8rem;
+}
+
 header h1 {
 	margin: 0;
 	font-family: 'Roboto', sans-serif;
@@ -138,6 +175,14 @@ footer a:hover {
 @media (max-width: 22rem) {
 	header {
 		padding-inline: 1rem;
+	}
+
+	header .navbar-nav {
+		gap: 0.25rem !important;
+	}
+
+	.account-controls {
+		flex-wrap: wrap;
 	}
 
 	main {

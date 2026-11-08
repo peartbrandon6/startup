@@ -22,6 +22,7 @@ export function Login() {
       }
 
       localStorage.setItem('username', result.username);
+      window.dispatchEvent(new Event('auth-change'));
       navigate('/fridge');
     } catch {
       setError('Unable to reach the service. Please try again.');
