@@ -116,7 +116,7 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 - [x] **Calls to third party endpoints** - I called the fruityvice api to get nutrition information for fruits
 - [x] **Backend service endpoints** - I made endpoints for all the backend information, using filler data for the database that is stored locally in the service.
 - [x] **Frontend calls service endpoints** - I called all of the backend endpoints in the clientside code using fetch
-- [x] **Supports registration, login, logout, and restricted endpoint** - I added the register login endpoints which store data locally in the service for now.
+- [x] **Supports registration, login, logout, and restricted endpoint** - I added the register, login, and logout endpoints which store data locally in the service for now. It tracks authetication and doesn't allow fridge or chat endpoints if unauthorized.
 - [x] **Uses BCrypt to hash passwords** - Used bcrypt in login and register endpoints to hash passwords
 
 ## 🚀 DB deliverable
