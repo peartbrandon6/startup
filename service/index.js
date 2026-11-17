@@ -4,9 +4,9 @@ const express = require('express');
 const http = require('node:http');
 const { randomUUID } = require('node:crypto');
 const { WebSocket, WebSocketServer } = require('ws');
+const { client, userCollection } = require('./database');
 
 const app = express();
-const users = [];
 const fridgeDatabase = {
   items: [
     { id: 'seed-milk', name: 'Milk', daysUntilExpiration: 5 },
@@ -17,7 +17,6 @@ const fridgeDatabase = {
     return this.items.map((item) => ({ ...item }));
   },
 };
-const creatingUsernames = new Set();
 const apiRouter = express.Router();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
 let chatServer;
@@ -50,7 +49,7 @@ function setAuthCookie(res, token) {
 }
 
 function findUserByToken(token) {
-  return users.find((user) => token && user.token === token);
+  return token ? userCollection.findOne({ token }) : null;
 }
 
 function getTokenFromCookieHeader(cookieHeader = '') {
@@ -69,15 +68,19 @@ function getTokenFromCookieHeader(cookieHeader = '') {
   }
 }
 
-function requireAuth(req, res, next) {
-  const user = findUserByToken(req.cookies.token);
-  if (!user) {
-    res.status(401).send({ msg: 'Unauthorized' });
-    return;
-  }
+async function requireAuth(req, res, next) {
+  try {
+    const user = await findUserByToken(req.cookies.token);
+    if (!user) {
+      res.status(401).send({ msg: 'Unauthorized' });
+      return;
+    }
 
-  req.authenticatedUser = user;
-  next();
+    req.authenticatedUser = user;
+    next();
+  } catch (error) {
+    next(error);
+  }
 }
 
 apiRouter.post('/auth/create', async (req, res) => {
@@ -93,22 +96,18 @@ apiRouter.post('/auth/create', async (req, res) => {
   }
 
   const normalizedUsername = username.trim();
-  if (
-    creatingUsernames.has(normalizedUsername) ||
-    users.some((user) => user.username === normalizedUsername)
-  ) {
-    res.status(409).send({ msg: 'Existing user' });
-    return;
-  }
-
-  creatingUsernames.add(normalizedUsername);
   try {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = { username: normalizedUsername, password: passwordHash, token: randomUUID() };
-    users.push(user);
+    await userCollection.insertOne(user);
     setAuthCookie(res, user.token);
-  } finally {
-    creatingUsernames.delete(normalizedUsername);
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(409).send({ msg: 'Existing user' });
+      return;
+    }
+
+    throw error;
   }
 
   res.status(201).send({ username: normalizedUsername });
@@ -126,14 +125,15 @@ apiRouter.post('/auth/login', async (req, res) => {
     return;
   }
 
-  const user = users.find((candidate) => candidate.username === username.trim());
+  const user = await userCollection.findOne({ username: username.trim() });
   if (!user || !(await bcrypt.compare(password, user.password))) {
     res.status(401).send({ msg: 'Unauthorized' });
     return;
   }
 
-  user.token = randomUUID();
-  setAuthCookie(res, user.token);
+  const token = randomUUID();
+  await userCollection.updateOne({ _id: user._id }, { $set: { token } });
+  setAuthCookie(res, token);
   res.send({ username: user.username });
 });
 
@@ -141,11 +141,10 @@ apiRouter.get('/auth/me', requireAuth, (req, res) => {
   res.send({ username: req.authenticatedUser.username });
 });
 
-apiRouter.delete('/auth/logout', (req, res) => {
+apiRouter.delete('/auth/logout', async (req, res) => {
   const token = req.cookies.token;
-  const user = findUserByToken(token);
-  if (user) {
-    delete user.token;
+  if (token) {
+    await userCollection.updateOne({ token }, { $unset: { token: '' } });
   }
 
   if (chatServer && token) {
@@ -252,32 +251,63 @@ apiRouter.get('/chat/messages', async (_req, res) => {
   res.send(await chatDatabase.getMessages());
 });
 
+app.use((error, _req, res, _next) => {
+  console.error('Request failed.', error);
+  res.status(500).send({ msg: 'Internal server error' });
+});
+
 const server = http.createServer(app);
 chatServer = new WebSocketServer({
   server,
   path: '/api/chat',
   maxPayload: 16 * 1024,
-  verifyClient: (info, done) => {
+  verifyClient: async (info, done) => {
     const token = getTokenFromCookieHeader(info.req.headers.cookie);
-    if (!findUserByToken(token)) {
-      done(false, 401, 'Unauthorized');
-      return;
-    }
+    try {
+      if (!(await findUserByToken(token))) {
+        done(false, 401, 'Unauthorized');
+        return;
+      }
 
-    done(true);
+      done(true);
+    } catch (error) {
+      console.error('Could not verify WebSocket authentication.', error);
+      done(false, 500, 'Internal server error');
+    }
   },
 });
 
 chatServer.on('connection', async (socket, request) => {
   socket.authToken = getTokenFromCookieHeader(request.headers.cookie);
-  socket.username = findUserByToken(socket.authToken).username;
+  try {
+    const user = await findUserByToken(socket.authToken);
+    if (!user) {
+      socket.close(1008, 'Authentication expired');
+      return;
+    }
+    socket.username = user.username;
+  } catch (error) {
+    console.error('Could not load WebSocket user.', error);
+    socket.close(1011, 'Internal server error');
+    return;
+  }
+
   socket.send(JSON.stringify({
     type: 'history',
     messages: await chatDatabase.getMessages(),
   }));
 
   socket.on('message', async (data) => {
-    if (!findUserByToken(socket.authToken)) {
+    let user;
+    try {
+      user = await findUserByToken(socket.authToken);
+    } catch (error) {
+      console.error('Could not verify WebSocket user.', error);
+      socket.close(1011, 'Internal server error');
+      return;
+    }
+
+    if (!user) {
       socket.close(1008, 'Authentication expired');
       return;
     }
@@ -320,6 +350,17 @@ chatServer.on('connection', async (socket, request) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`Listening on port ${port}`);
+async function startServer() {
+  await userCollection.createIndex({ username: 1 }, { unique: true });
+  server.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Unable to initialize the user database.', error);
+  process.exitCode = 1;
+  client.close().catch((closeError) => {
+    console.error('Unable to close the MongoDB client.', closeError);
+  });
 });
