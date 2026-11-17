@@ -4,19 +4,9 @@ const express = require('express');
 const http = require('node:http');
 const { randomUUID } = require('node:crypto');
 const { WebSocket, WebSocketServer } = require('ws');
-const { client, userCollection } = require('./database');
+const { client, fridgeCollection, userCollection } = require('./database');
 
 const app = express();
-const fridgeDatabase = {
-  items: [
-    { id: 'seed-milk', name: 'Milk', daysUntilExpiration: 5 },
-    { id: 'seed-eggs', name: 'Eggs', daysUntilExpiration: 12 },
-    { id: 'seed-spinach', name: 'Spinach', daysUntilExpiration: 3 },
-  ],
-  async getItems() {
-    return this.items.map((item) => ({ ...item }));
-  },
-};
 const apiRouter = express.Router();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
 let chatServer;
@@ -167,7 +157,7 @@ apiRouter.use('/fridge', requireAuth);
 apiRouter.use('/nutrition', requireAuth);
 apiRouter.use('/chat', requireAuth);
 
-apiRouter.post('/fridge/items', (req, res) => {
+apiRouter.post('/fridge/items', async (req, res) => {
   const { id, name, daysUntilExpiration } = req.body || {};
   if (
     typeof id !== 'string' ||
@@ -182,18 +172,27 @@ apiRouter.post('/fridge/items', (req, res) => {
     return;
   }
 
-  if (fridgeDatabase.items.some((item) => item.id === id)) {
-    res.status(409).send({ msg: 'Fridge item already exists' });
-    return;
+  const item = { id, name: name.trim(), daysUntilExpiration };
+  try {
+    await fridgeCollection.insertOne(item);
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(409).send({ msg: 'Fridge item already exists' });
+      return;
+    }
+
+    throw error;
   }
 
-  const item = { id, name: name.trim(), daysUntilExpiration };
-  fridgeDatabase.items.push(item);
   res.status(201).send(item);
 });
 
 apiRouter.get('/fridge/items', async (_req, res) => {
-  res.send(await fridgeDatabase.getItems());
+  const items = await fridgeCollection
+    .find({}, { projection: { _id: 0 } })
+    .sort({ _id: 1 })
+    .toArray();
+  res.send(items);
 });
 
 apiRouter.get('/nutrition/:fruit', async (req, res) => {
@@ -238,12 +237,8 @@ apiRouter.get('/nutrition/:fruit', async (req, res) => {
   }
 });
 
-apiRouter.delete('/fridge/items/:id', (req, res) => {
-  const itemIndex = fridgeDatabase.items.findIndex((item) => item.id === req.params.id);
-  if (itemIndex !== -1) {
-    fridgeDatabase.items.splice(itemIndex, 1);
-  }
-
+apiRouter.delete('/fridge/items/:id', async (req, res) => {
+  await fridgeCollection.deleteOne({ id: req.params.id });
   res.status(204).end();
 });
 
@@ -352,13 +347,14 @@ chatServer.on('connection', async (socket, request) => {
 
 async function startServer() {
   await userCollection.createIndex({ username: 1 }, { unique: true });
+  await fridgeCollection.createIndex({ id: 1 }, { unique: true });
   server.listen(port, () => {
     console.log(`Listening on port ${port}`);
   });
 }
 
 startServer().catch((error) => {
-  console.error('Unable to initialize the user database.', error);
+  console.error('Unable to initialize the database.', error);
   process.exitCode = 1;
   client.close().catch((closeError) => {
     console.error('Unable to close the MongoDB client.', closeError);
