@@ -7,4 +7,81 @@ const db = client.db('startup');
 const userCollection = db.collection('user');
 const fridgeCollection = db.collection('fridgeItem');
 
-module.exports = { client, db, userCollection, fridgeCollection };
+async function initializeDatabase() {
+  await Promise.all([
+    userCollection.createIndex({ username: 1 }, { unique: true }),
+    fridgeCollection.createIndex({ id: 1 }, { unique: true }),
+  ]);
+}
+
+function closeDatabase() {
+  return client.close();
+}
+
+async function createUser(user) {
+  try {
+    await userCollection.insertOne(user);
+    return true;
+  } catch (error) {
+    if (error.code === 11000) {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
+function getUserByUsername(username) {
+  return userCollection.findOne({ username });
+}
+
+function getUserByToken(token) {
+  return token ? userCollection.findOne({ token }) : null;
+}
+
+function setUserToken(userId, token) {
+  return userCollection.updateOne({ _id: userId }, { $set: { token } });
+}
+
+function clearUserToken(token) {
+  return token
+    ? userCollection.updateOne({ token }, { $unset: { token: '' } })
+    : Promise.resolve();
+}
+
+async function addFridgeItem(item) {
+  try {
+    await fridgeCollection.insertOne(item);
+    return true;
+  } catch (error) {
+    if (error.code === 11000) {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
+function getFridgeItems() {
+  return fridgeCollection
+    .find({}, { projection: { _id: 0 } })
+    .sort({ _id: 1 })
+    .toArray();
+}
+
+function deleteFridgeItem(id) {
+  return fridgeCollection.deleteOne({ id });
+}
+
+module.exports = {
+  addFridgeItem,
+  clearUserToken,
+  closeDatabase,
+  createUser,
+  deleteFridgeItem,
+  getFridgeItems,
+  getUserByToken,
+  getUserByUsername,
+  initializeDatabase,
+  setUserToken,
+};

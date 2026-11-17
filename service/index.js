@@ -4,7 +4,18 @@ const express = require('express');
 const http = require('node:http');
 const { randomUUID } = require('node:crypto');
 const { WebSocket, WebSocketServer } = require('ws');
-const { client, fridgeCollection, userCollection } = require('./database');
+const {
+  addFridgeItem,
+  clearUserToken,
+  closeDatabase,
+  createUser,
+  deleteFridgeItem,
+  getFridgeItems,
+  getUserByToken,
+  getUserByUsername,
+  initializeDatabase,
+  setUserToken,
+} = require('./database');
 
 const app = express();
 const apiRouter = express.Router();
@@ -38,10 +49,6 @@ function setAuthCookie(res, token) {
   });
 }
 
-function findUserByToken(token) {
-  return token ? userCollection.findOne({ token }) : null;
-}
-
 function getTokenFromCookieHeader(cookieHeader = '') {
   const tokenCookie = cookieHeader
     .split(';')
@@ -60,7 +67,7 @@ function getTokenFromCookieHeader(cookieHeader = '') {
 
 async function requireAuth(req, res, next) {
   try {
-    const user = await findUserByToken(req.cookies.token);
+    const user = await getUserByToken(req.cookies.token);
     if (!user) {
       res.status(401).send({ msg: 'Unauthorized' });
       return;
@@ -86,20 +93,14 @@ apiRouter.post('/auth/create', async (req, res) => {
   }
 
   const normalizedUsername = username.trim();
-  try {
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = { username: normalizedUsername, password: passwordHash, token: randomUUID() };
-    await userCollection.insertOne(user);
-    setAuthCookie(res, user.token);
-  } catch (error) {
-    if (error.code === 11000) {
-      res.status(409).send({ msg: 'Existing user' });
-      return;
-    }
-
-    throw error;
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = { username: normalizedUsername, password: passwordHash, token: randomUUID() };
+  if (!(await createUser(user))) {
+    res.status(409).send({ msg: 'Existing user' });
+    return;
   }
 
+  setAuthCookie(res, user.token);
   res.status(201).send({ username: normalizedUsername });
 });
 
@@ -115,14 +116,14 @@ apiRouter.post('/auth/login', async (req, res) => {
     return;
   }
 
-  const user = await userCollection.findOne({ username: username.trim() });
+  const user = await getUserByUsername(username.trim());
   if (!user || !(await bcrypt.compare(password, user.password))) {
     res.status(401).send({ msg: 'Unauthorized' });
     return;
   }
 
   const token = randomUUID();
-  await userCollection.updateOne({ _id: user._id }, { $set: { token } });
+  await setUserToken(user._id, token);
   setAuthCookie(res, token);
   res.send({ username: user.username });
 });
@@ -133,9 +134,7 @@ apiRouter.get('/auth/me', requireAuth, (req, res) => {
 
 apiRouter.delete('/auth/logout', async (req, res) => {
   const token = req.cookies.token;
-  if (token) {
-    await userCollection.updateOne({ token }, { $unset: { token: '' } });
-  }
+  await clearUserToken(token);
 
   if (chatServer && token) {
     for (const client of chatServer.clients) {
@@ -173,26 +172,16 @@ apiRouter.post('/fridge/items', async (req, res) => {
   }
 
   const item = { id, name: name.trim(), daysUntilExpiration };
-  try {
-    await fridgeCollection.insertOne(item);
-  } catch (error) {
-    if (error.code === 11000) {
-      res.status(409).send({ msg: 'Fridge item already exists' });
-      return;
-    }
-
-    throw error;
+  if (!(await addFridgeItem(item))) {
+    res.status(409).send({ msg: 'Fridge item already exists' });
+    return;
   }
 
   res.status(201).send(item);
 });
 
 apiRouter.get('/fridge/items', async (_req, res) => {
-  const items = await fridgeCollection
-    .find({}, { projection: { _id: 0 } })
-    .sort({ _id: 1 })
-    .toArray();
-  res.send(items);
+  res.send(await getFridgeItems());
 });
 
 apiRouter.get('/nutrition/:fruit', async (req, res) => {
@@ -238,7 +227,7 @@ apiRouter.get('/nutrition/:fruit', async (req, res) => {
 });
 
 apiRouter.delete('/fridge/items/:id', async (req, res) => {
-  await fridgeCollection.deleteOne({ id: req.params.id });
+  await deleteFridgeItem(req.params.id);
   res.status(204).end();
 });
 
@@ -259,7 +248,7 @@ chatServer = new WebSocketServer({
   verifyClient: async (info, done) => {
     const token = getTokenFromCookieHeader(info.req.headers.cookie);
     try {
-      if (!(await findUserByToken(token))) {
+      if (!(await getUserByToken(token))) {
         done(false, 401, 'Unauthorized');
         return;
       }
@@ -275,7 +264,7 @@ chatServer = new WebSocketServer({
 chatServer.on('connection', async (socket, request) => {
   socket.authToken = getTokenFromCookieHeader(request.headers.cookie);
   try {
-    const user = await findUserByToken(socket.authToken);
+    const user = await getUserByToken(socket.authToken);
     if (!user) {
       socket.close(1008, 'Authentication expired');
       return;
@@ -295,7 +284,7 @@ chatServer.on('connection', async (socket, request) => {
   socket.on('message', async (data) => {
     let user;
     try {
-      user = await findUserByToken(socket.authToken);
+      user = await getUserByToken(socket.authToken);
     } catch (error) {
       console.error('Could not verify WebSocket user.', error);
       socket.close(1011, 'Internal server error');
@@ -346,8 +335,7 @@ chatServer.on('connection', async (socket, request) => {
 });
 
 async function startServer() {
-  await userCollection.createIndex({ username: 1 }, { unique: true });
-  await fridgeCollection.createIndex({ id: 1 }, { unique: true });
+  await initializeDatabase();
   server.listen(port, () => {
     console.log(`Listening on port ${port}`);
   });
@@ -356,7 +344,7 @@ async function startServer() {
 startServer().catch((error) => {
   console.error('Unable to initialize the database.', error);
   process.exitCode = 1;
-  client.close().catch((closeError) => {
+  closeDatabase().catch((closeError) => {
     console.error('Unable to close the MongoDB client.', closeError);
   });
 });
