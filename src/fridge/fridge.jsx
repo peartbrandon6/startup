@@ -31,6 +31,9 @@ export function Fridge() {
   }
 
   useEffect(() => {
+    let refreshTimer;
+    let cancelled = false;
+
     async function loadItems() {
       try {
         const response = await fetch('/api/fridge/items');
@@ -52,15 +55,40 @@ export function Fridge() {
           throw new Error('Fridge data is not in the expected format.');
         }
 
-        setItems(result);
-        setStorageReady(true);
+        if (!cancelled) {
+          setItems(result);
+          setStorageReady(true);
+        }
       } catch (loadError) {
         console.error('Could not load fridge items from the service.', loadError);
-        setError('Could not load fridge items. Check the service connection and try again.');
+        if (!cancelled) {
+          setError('Could not load fridge items. Check the service connection and try again.');
+        }
       }
     }
 
     loadItems();
+
+    function scheduleMidnightRefresh() {
+      const now = new Date();
+      const nextUtcMidnight = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1
+      );
+      refreshTimer = window.setTimeout(async () => {
+        await loadItems();
+        if (!cancelled) {
+          scheduleMidnightRefresh();
+        }
+      }, nextUtcMidnight - Date.now() + 1000);
+    }
+
+    scheduleMidnightRefresh();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(refreshTimer);
+    };
   }, []);
 
   async function addItem(event) {

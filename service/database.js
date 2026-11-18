@@ -6,6 +6,35 @@ const client = new MongoClient(url);
 const db = client.db(process.env.MONGODB_DB_NAME || 'startup');
 const userCollection = db.collection('user');
 const fridgeCollection = db.collection('fridgeItem');
+const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+function getUtcStartOfDay() {
+  const now = new Date();
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+}
+
+async function migrateFridgeItemsToExpirationDates() {
+  const legacyItems = await fridgeCollection
+    .find({ expirationDate: { $exists: false }, daysUntilExpiration: { $type: 'number' } })
+    .toArray();
+  const today = getUtcStartOfDay();
+
+  if (legacyItems.length) {
+    await fridgeCollection.bulkWrite(
+      legacyItems.map((item) => ({
+        updateOne: {
+          filter: { _id: item._id, expirationDate: { $exists: false } },
+          update: {
+            $set: {
+              expirationDate: new Date(today + item.daysUntilExpiration * millisecondsPerDay),
+            },
+            $unset: { daysUntilExpiration: '' },
+          },
+        },
+      }))
+    );
+  }
+}
 
 async function initializeDatabase() {
   await Promise.all([
@@ -20,6 +49,8 @@ async function initializeDatabase() {
       throw error;
     }
   }
+
+  await migrateFridgeItemsToExpirationDates();
 }
 
 function closeDatabase() {
@@ -58,8 +89,13 @@ function clearUserToken(token) {
 }
 
 async function addFridgeItem(username, item) {
+  const { daysUntilExpiration, ...fridgeItem } = item;
+  const expirationDate = new Date(
+    getUtcStartOfDay() + daysUntilExpiration * millisecondsPerDay
+  );
+
   try {
-    await fridgeCollection.insertOne({ ...item, username });
+    await fridgeCollection.insertOne({ ...fridgeItem, expirationDate, username });
     return true;
   } catch (error) {
     if (error.code === 11000) {
@@ -70,11 +106,20 @@ async function addFridgeItem(username, item) {
   }
 }
 
-function getFridgeItems(username) {
-  return fridgeCollection
-    .find({ username }, { projection: { _id: 0, username: 0 } })
+async function getFridgeItems(username) {
+  const today = getUtcStartOfDay();
+  const items = await fridgeCollection
+    .find({ username })
     .sort({ _id: 1 })
     .toArray();
+
+  return items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    daysUntilExpiration: item.expirationDate instanceof Date
+      ? Number(((item.expirationDate.getTime() - today) / millisecondsPerDay).toFixed(8))
+      : item.daysUntilExpiration,
+  }));
 }
 
 function deleteFridgeItem(username, id) {
