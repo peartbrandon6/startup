@@ -172,7 +172,7 @@ apiRouter.post('/fridge/items', async (req, res) => {
   }
 
   const item = { id, name: name.trim(), daysUntilExpiration };
-  if (!(await addFridgeItem(item))) {
+  if (!(await addFridgeItem(req.authenticatedUser.username, item))) {
     res.status(409).send({ msg: 'Fridge item already exists' });
     return;
   }
@@ -180,8 +180,8 @@ apiRouter.post('/fridge/items', async (req, res) => {
   res.status(201).send(item);
 });
 
-apiRouter.get('/fridge/items', async (_req, res) => {
-  res.send(await getFridgeItems());
+apiRouter.get('/fridge/items', async (req, res) => {
+  res.send(await getFridgeItems(req.authenticatedUser.username));
 });
 
 apiRouter.get('/nutrition/:fruit', async (req, res) => {
@@ -227,7 +227,7 @@ apiRouter.get('/nutrition/:fruit', async (req, res) => {
 });
 
 apiRouter.delete('/fridge/items/:id', async (req, res) => {
-  await deleteFridgeItem(req.params.id);
+  await deleteFridgeItem(req.authenticatedUser.username, req.params.id);
   res.status(204).end();
 });
 

@@ -10,8 +10,16 @@ const fridgeCollection = db.collection('fridgeItem');
 async function initializeDatabase() {
   await Promise.all([
     userCollection.createIndex({ username: 1 }, { unique: true }),
-    fridgeCollection.createIndex({ id: 1 }, { unique: true }),
+    fridgeCollection.createIndex({ username: 1, id: 1 }, { unique: true }),
   ]);
+
+  try {
+    await fridgeCollection.dropIndex('id_1');
+  } catch (error) {
+    if (error.code !== 27) {
+      throw error;
+    }
+  }
 }
 
 function closeDatabase() {
@@ -49,9 +57,9 @@ function clearUserToken(token) {
     : Promise.resolve();
 }
 
-async function addFridgeItem(item) {
+async function addFridgeItem(username, item) {
   try {
-    await fridgeCollection.insertOne(item);
+    await fridgeCollection.insertOne({ ...item, username });
     return true;
   } catch (error) {
     if (error.code === 11000) {
@@ -62,15 +70,15 @@ async function addFridgeItem(item) {
   }
 }
 
-function getFridgeItems() {
+function getFridgeItems(username) {
   return fridgeCollection
-    .find({}, { projection: { _id: 0 } })
+    .find({ username }, { projection: { _id: 0, username: 0 } })
     .sort({ _id: 1 })
     .toArray();
 }
 
-function deleteFridgeItem(id) {
-  return fridgeCollection.deleteOne({ id });
+function deleteFridgeItem(username, id) {
+  return fridgeCollection.deleteOne({ username, id });
 }
 
 module.exports = {
