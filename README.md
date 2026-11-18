@@ -124,7 +124,7 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
 - [x] I completed the prerequisites for this deliverable (Simon deployed, GitHub link, Git commits)
-- [x] **Stores data in MongoDB** - Stores all fridge data within MongoDB, ensures that only the autheticated user can access their fridge data.
+- [x] **Stores data in MongoDB** - Stores all fridge data within MongoDB, ensures that only the autheticated user can access their fridge data. Tested to make sure data persists even when the service resets.
 - [x] **Stores credentials in MongoDB** - Stores hashed passwords, usernames, and authetication tokens in the database. Authentication tokens are deleted on logout.
 
 ## 🚀 WebSocket deliverable
